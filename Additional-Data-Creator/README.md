@@ -1,5 +1,13 @@
 # Additional Data Creator
- 
+
+## Change history
+29-Aug-19:
+- initial draft
+30-Aug-19:
+- orchestrated filters
+- now with less memory useage!
+
+# Overview
 This program takes in image file and segmentation maps and creates augmented versions. This is to provide additional data for training other models
 
 One of the biggest issues when training deep neural networks is a lack of data. Using the same data over and over again will lead to overfitting. Fortunately for image data we can create augmented data that will help alleviate some of our data problems. Using this data to train our network will result in a much more robust and generalised model.
