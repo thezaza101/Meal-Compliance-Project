@@ -42,15 +42,15 @@ One of the biggest issues when training deep neural networks is a lack of data. 
 
 1. Read in image and annotation data as a list of tuples
 2. Foreach tuple:
-  1. resize the width to a specified value (1600 in current script)
-  2. calculate the scaling factor compared to the original image
-  3. determine height of scaled image (height of original image \* scaling factor)
-  4. calculate the closest value to new height that is divisible by 32
-  5. resize the image to new width and height value
-  6. apply same scaling to the annotation image
-    1. **Issue** , when resizing the annotation image we can&#39;t use anti aliasing or interpolation as it interduces new greyscale values. This will lead to images that are more &#39;jagged&#39; – especially if upscaling
-  7. Augment each tuple using the same filter (currently have 4 different filters)
-  8. Save the output of each filter
+   1. resize the width to a specified value (1600 in current script)
+   2. calculate the scaling factor compared to the original image
+   3. determine height of scaled image (height of original image \* scaling factor)
+   4. calculate the closest value to new height that is divisible by 32
+   5. resize the image to new width and height value
+   6. apply same scaling to the annotation image
+      1. **Issue** , when resizing the annotation image we can&#39;t use anti aliasing or interpolation as it interduces new greyscale values. This will lead to images that are more &#39;jagged&#39; – especially if upscaling
+   7. Augment each tuple using the same filter (currently have 4 different filters)
+   8. Save the output of each filter
 
 ## Results
 
