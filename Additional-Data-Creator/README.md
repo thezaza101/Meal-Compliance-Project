@@ -1,9 +1,10 @@
 # Additional Data Creator
 
 ## Change history
-29-Aug-19:
+**29-Aug-19:**
 - initial draft
-30-Aug-19:
+
+**30-Aug-19:**
 - orchestrated filters
 - now with less memory useage!
 
