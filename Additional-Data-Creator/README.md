@@ -67,10 +67,7 @@ One of the biggest issues when training deep neural networks is a lack of data. 
 
 ### Installation using pip3
 - Assuming Python  >= 3.7
+- pip3 install sklearn
 - pip3 install six numpy scipy Pillow matplotlib scikit-image opencv-python imageio Shapely
 - pip3 install imgaug
-- pip3 install skimage
-- pip3 install matplotlib
-- pip3 install sklearn
-
 
