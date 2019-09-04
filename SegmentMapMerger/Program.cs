@@ -74,5 +74,6 @@ namespace SegmentMapMerger
             }
             return files;
         }
+        # endregion
     }
 }
