@@ -3,7 +3,7 @@
 
 # # Additional Data Creator Workbook
 
-# In[15]:
+# In[ ]:
 
 
 # Import the relevent packages
@@ -18,11 +18,10 @@ from skimage.color import rgb2gray # RGB image to grey
 from skimage.transform import resize # Resize images
 import matplotlib.pyplot as plt # for visualisation
 import pandas as pd # Data manipulations
+from scipy import stats #not used but helps with debuging
 
-# from scipy import stats #not used but helps with debuging
 
-
-# In[16]:
+# In[ ]:
 
 
 # Set the input and output paths for later reference
@@ -36,7 +35,7 @@ dataPaths = {'InputImage':os.path.abspath(os.path.join('Data','Images')),
              'yTest':os.path.abspath(os.path.join('OutputData','yTest'))}
 
 
-# In[17]:
+# In[ ]:
 
 
 def getFilesInDir(dir):
@@ -73,7 +72,9 @@ def validateImagePairs(imPairTuple, width):
 
 def augment_seg(imSegTuple, filterSeq):
     """This function applies a 'filter' to the input image and its annotation """
-    img , seg = imSegTuple    
+    img , seg = imSegTuple  
+    img = img*255
+    img = img.astype(np.uint8)
     aug_det = filterSeq.to_deterministic() 
     image_aug = aug_det.augment_image( img )
     segmap = ia.SegmentationMapOnImage( seg , nb_classes=len(np.unique(seg)), shape=img.shape )
@@ -94,13 +95,14 @@ def saveAugmentOutputs(augmentImagePairs, originalFileNamePairs, suffex, outImag
         fileNameSplit = fileName.split('.')
         imFileName = outImagPath+'\\'+fileNameSplit[0]+suffex+'.'+fileNameSplit[1]
         imio.imsave(imFileName, img)
-        print(imFileName)
+        #print(imFileName)
         annot = augmentImagePairs[i][1]
+        annot = flattenSegImage(annot,getSegClasses(annot))
         fileNameAnnot = path_leaf(originalFileNamePairs[i][1])
         fileNameAnnotSplit = fileNameAnnot.split('.')
         annotFileName = outAnnotPath+'\\'+fileNameAnnotSplit[0]+suffex+'.'+fileNameAnnotSplit[1]
-        imio.imsave(annotFileName, annot)
-        print(annotFileName)
+        annot = annot.astype(np.uint8)
+        imio.imwrite(annotFileName, annot)
 
 def ShowAugmentCompare(originalTup, newTup):
     """This function shows a comparason of orginal vs augmented images and annotations"""
@@ -116,6 +118,26 @@ def ShowAugmentCompare(originalTup, newTup):
     ax[3].set_title("New annotation")
     plt.tight_layout()
     plt.show()
+    
+
+def getSegClasses(seg):
+    segUnique = np.unique(seg)
+    #print(segUnique)
+    output = {}
+    for i in range(0,len(segUnique)):
+        output[segUnique[i]] = i
+    return output
+        
+    
+def flattenSegImage(seg, classes):
+    k = np.array(list(classes.keys()))
+    v = np.array(list(classes.values()))
+    sidx = k.argsort()
+    output = v[sidx[np.searchsorted(k,seg,sorter=sidx)]]
+    
+    #print(stats.describe(seg).mean)
+    #print(stats.describe(output).mean)
+    return output
 
 
 # In[ ]:
@@ -143,31 +165,31 @@ print('Createing filters...')
 
 filters = {
     'a':None,
-    'b':iaa.Sequential([iaa.MotionBlur(k=5,angle=[-90, 90]),]), # horizontally flip ,
+    'b':iaa.Sequential([iaa.MotionBlur(k=10,angle=[-90, 90]),]), # horizontally flip ,
     'c':iaa.Sequential([iaa.Fliplr(1),]), # horizontally flip ,
     'd':iaa.Sequential([iaa.Flipud(1),]), # vertically flip ,
     'e':iaa.Sequential([iaa.PerspectiveTransform(scale=0.1, keep_size=True),]),# Perspective Transform,
     'f':iaa.Sequential([iaa.PiecewiseAffine(scale=0.05),]),# Piecewise Affine
-    'g':iaa.Sequential([iaa.Multiply((0.5, 1.5), per_channel=True),]),# Make image brighter/darker
+    'g':iaa.Sequential([iaa.Multiply((0.5, 1.5)),]),# Make image brighter/darker
     'h':iaa.Sequential([iaa.ChannelShuffle(),iaa.PiecewiseAffine(scale=0.05), iaa.PerspectiveTransform(scale=0.1, keep_size=True)]),# Shift the hue,
-    'i':iaa.Sequential([iaa.MotionBlur(k=5,angle=[-90, 90]),iaa.Fliplr(1),iaa.ChannelShuffle()]),
-    'j':iaa.Sequential([iaa.MotionBlur(k=5,angle=[-90, 90]),iaa.Fliplr(1),iaa.Flipud(1)]),
-    'k':iaa.Sequential([iaa.MotionBlur(k=5,angle=[-90, 90]),iaa.Fliplr(1),iaa.Flipud(1),iaa.PerspectiveTransform(scale=0.1, keep_size=True)]),
+    'i':iaa.Sequential([iaa.MotionBlur(k=10,angle=[-90, 90]),iaa.Fliplr(1),iaa.ChannelShuffle()]),
+    'j':iaa.Sequential([iaa.MotionBlur(k=10,angle=[-90, 90]),iaa.Fliplr(1),iaa.Flipud(1)]),
+    'k':iaa.Sequential([iaa.MotionBlur(k=10,angle=[-90, 90]),iaa.Fliplr(1),iaa.Flipud(1),iaa.PerspectiveTransform(scale=0.1, keep_size=True)]),
     'l':iaa.Sequential([iaa.Fliplr(1),iaa.Flipud(1),iaa.PerspectiveTransform(scale=0.1, keep_size=True),iaa.PiecewiseAffine(scale=0.05)]),
     'm':iaa.Sequential([iaa.Flipud(1),iaa.PerspectiveTransform(scale=0.1, keep_size=True),iaa.PiecewiseAffine(scale=0.05),iaa.Multiply((0.5, 1.5), per_channel=True)]),
     'n':iaa.Sequential([iaa.PerspectiveTransform(scale=0.1, keep_size=True),iaa.PiecewiseAffine(scale=0.05),iaa.Multiply((0.5, 1.5), per_channel=True),iaa.ChannelShuffle()]),
     'o':iaa.Sequential([iaa.PiecewiseAffine(scale=0.05),iaa.ChannelShuffle()]),
     'p':iaa.Sequential([iaa.Flipud(1),iaa.PerspectiveTransform(scale=0.1, keep_size=True),iaa.PiecewiseAffine(scale=0.05),iaa.ChannelShuffle()]),
     'q':iaa.Sequential([iaa.Fliplr(1),iaa.ChannelShuffle()]),
-    'r':iaa.Sequential([iaa.MotionBlur(k=5,angle=[-90, 90]),iaa.PerspectiveTransform(scale=0.1, keep_size=True),iaa.Multiply((0.5, 1.5), per_channel=True),iaa.ChannelShuffle()]),
+    'r':iaa.Sequential([iaa.MotionBlur(k=10,angle=[-90, 90]),iaa.PerspectiveTransform(scale=0.1, keep_size=True),iaa.Multiply((0.5, 1.5), per_channel=True),iaa.ChannelShuffle()]),
     's':iaa.Sequential([iaa.Fliplr(1),iaa.Flipud(1), iaa.Multiply((0.5, 1.5), per_channel=True),iaa.ChannelShuffle()]),
     't':iaa.Sequential([iaa.Fliplr(1),iaa.Flipud(1), iaa.PiecewiseAffine(scale=0.05),iaa.ChannelShuffle()]),
     'u':iaa.Sequential([iaa.Fliplr(1),iaa.Flipud(1), iaa.PerspectiveTransform(scale=0.1, keep_size=True),iaa.Multiply((0.5, 1.5))]),
-    'v':iaa.Sequential([iaa.MotionBlur(k=5,angle=[-90, 90]),iaa.ChannelShuffle()]),
+    'v':iaa.Sequential([iaa.MotionBlur(k=10,angle=[-90, 90]),iaa.ChannelShuffle()]),
     'w':iaa.Sequential([iaa.Flipud(1),iaa.PerspectiveTransform(scale=0.1, keep_size=True)]),
     'x':iaa.Sequential([iaa.Fliplr(1),iaa.ChannelShuffle()]),
     'y':iaa.Sequential([iaa.PiecewiseAffine(scale=0.05),iaa.Multiply((0.5, 1.5), per_channel=True)]),
-    'z':iaa.Sequential([iaa.MotionBlur(k=5,angle=[-90, 90]),iaa.PerspectiveTransform(scale=0.1, keep_size=True),iaa.Multiply((0.5, 1.5), per_channel=True),iaa.ChannelShuffle()])
+    'z':iaa.Sequential([iaa.MotionBlur(k=10,angle=[-90, 90]),iaa.PerspectiveTransform(scale=0.1, keep_size=True),iaa.Multiply((0.5, 1.5), per_channel=True),iaa.ChannelShuffle()])
 }
 
 print(filters)
@@ -183,13 +205,13 @@ for key, value in filters.items():
         print('Applying filter \''+ key +'\' to input')
         outputAugment = []
         for tup in inputImagePairs:
-            outputAugment.append(augment_seg(tup, fltr1))
+            outputAugment.append(augment_seg(tup, value))
         print('Saving output of filter \''+ key +'\'')
         saveAugmentOutputs(outputAugment, filePairPaths, key, dataPaths['OutputImage'],dataPaths['OutputAnnot'])
         
 
 
-# In[24]:
+# In[ ]:
 
 
 from sklearn.model_selection import train_test_split # setting up the test and train data
@@ -201,13 +223,13 @@ X = df['X']
 y = df['y']
 
 
-# In[25]:
+# In[ ]:
 
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=0)
 
 
-# In[26]:
+# In[ ]:
 
 
 from shutil import copyfile

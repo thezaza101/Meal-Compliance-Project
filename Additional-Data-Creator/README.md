@@ -8,6 +8,10 @@
 - orchestrated filters
 - now with less memory useage!
 
+**09-Sept-19:**
+- Changed filters
+- bug fixes
+
 # Overview
 This program takes in image file and segmentation maps and creates augmented versions. This is to provide additional data for training other models
 
