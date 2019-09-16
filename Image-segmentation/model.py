@@ -17,6 +17,9 @@ from keras.layers import *
 from types import MethodType
 
 IMAGE_ORDERING = 'channels_last'
+pretrained_url = "C:\\Users\\theza\\Documents\\Uni\\MIT\\2019\\TP\\Project\\Meal-Compliance-Project\\Image-segmentation\\models\\base_model.h5"
+class_colors = [  ( random.randint(0,255),random.randint(0,255),random.randint(0,255)   ) for _ in range(5000)  ]
+MERGE_AXIS = -1
 
 # models/model_utils.py
 def get_segmentation_model( input , output ):
@@ -27,21 +30,12 @@ def get_segmentation_model( input , output ):
 	o_shape = Model(img_input , o ).output_shape
 	i_shape = Model(img_input , o ).input_shape
 
-	if IMAGE_ORDERING == 'channels_first':
-		output_height = o_shape[2]
-		output_width = o_shape[3]
-		input_height = i_shape[2]
-		input_width = i_shape[3]
-		n_classes = o_shape[1]
-		o = (Reshape((  -1  , output_height*output_width   )))(o)
-		o = (Permute((2, 1)))(o)
-	elif IMAGE_ORDERING == 'channels_last':
-		output_height = o_shape[1]
-		output_width = o_shape[2]
-		input_height = i_shape[1]
-		input_width = i_shape[2]
-		n_classes = o_shape[3]
-		o = (Reshape((   output_height*output_width , -1    )))(o)
+	output_height = o_shape[1]
+	output_width = o_shape[2]
+	input_height = i_shape[1]
+	input_width = i_shape[2]
+	n_classes = o_shape[3]
+	o = (Reshape((   output_height*output_width , -1    )))(o)
 
 	o = (Activation('softmax'))(o)
 	model = Model( img_input , o )
@@ -62,7 +56,6 @@ def get_segmentation_model( input , output ):
 
 def image_segmentation_generator( images_path , segs_path ,  batch_size,  n_classes , input_height , input_width , output_height , output_width  , do_augment=False ):
 	
-
 	img_seg_pairs = get_pairs_from_paths( images_path , segs_path )
 	random.shuffle( img_seg_pairs )
 	zipped = itertools.cycle( img_seg_pairs  )
@@ -83,8 +76,7 @@ def image_segmentation_generator( images_path , segs_path ,  batch_size,  n_clas
 			Y.append( get_segmentation_arr( seg , n_classes , output_width , output_height )  )
 
 		yield np.array(X) , np.array(Y)
-
-
+        
 def train( model  , 
 		train_images  , 
 		train_annotations , 
@@ -222,15 +214,9 @@ def predict( model=None , inp=None , out_fname=None , checkpoints_path=None    )
 
 	if not out_fname is None:
 		cv2.imwrite(  out_fname , seg_img )
-
-
 	return pr
 
 #models/vgg16.py
-if IMAGE_ORDERING == 'channels_first':
-	pretrained_url = "https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg16_weights_th_dim_ordering_th_kernels_notop.h5"
-elif IMAGE_ORDERING == 'channels_last':
-	pretrained_url = "https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5"
 
 
 def get_vgg_encoder( input_height=224 ,  input_width=224 , pretrained='imagenet'):
@@ -282,11 +268,10 @@ def get_vgg_encoder( input_height=224 ,  input_width=224 , pretrained='imagenet'
 
 	return img_input , [f1 , f2 , f3 , f4 , f5 ]
 
-
 def verify_segmentation_dataset( images_path , segs_path , n_classes ):
 	
 	img_seg_pairs = get_pairs_from_paths( images_path , segs_path )
-
+	
 	assert len(img_seg_pairs)>0 , "Dataset looks empty or path is wrong "
 	
 	for im_fn , seg_fn in tqdm(img_seg_pairs) :
@@ -297,7 +282,6 @@ def verify_segmentation_dataset( images_path , segs_path , n_classes ):
 		assert ( np.max(seg[:,:,0]) < n_classes) , "The pixel values of seg image should be from 0 to "+str(n_classes-1) + " . Found pixel value "+str(np.max(seg[:,:,0]))
 
 	print("Dataset verified! ")
-
 
 def get_pairs_from_paths( images_path , segs_path ):
 	images = glob.glob( os.path.join(images_path,"*.jpg")  ) + glob.glob( os.path.join(images_path,"*.png")  ) +  glob.glob( os.path.join(images_path,"*.jpeg")  )
@@ -364,57 +348,11 @@ def get_segmentation_arr( path , nClasses ,  width , height , no_reshape=False )
 	seg_labels = np.reshape(seg_labels, ( width*height , nClasses ))
 	return seg_labels
 
-
-
-
-
-def unet_mini( n_classes , input_height=360, input_width=480   ):
-
-	if IMAGE_ORDERING == 'channels_first':
-		img_input = Input(shape=(3,input_height,input_width))
-		MERGE_AXIS = 1
-	elif IMAGE_ORDERING == 'channels_last':
-		img_input = Input(shape=(input_height,input_width , 3 ))
-		MERGE_AXIS = -1
-
-
-	conv1 = Conv2D(32, (3, 3), data_format=IMAGE_ORDERING, activation='relu', padding='same')(img_input)
-	conv1 = Dropout(0.2)(conv1)
-	conv1 = Conv2D(32, (3, 3), data_format=IMAGE_ORDERING, activation='relu', padding='same')(conv1)
-	pool1 = MaxPooling2D((2, 2), data_format=IMAGE_ORDERING)(conv1)
 	
-	conv2 = Conv2D(64, (3, 3), data_format=IMAGE_ORDERING, activation='relu', padding='same')(pool1)
-	conv2 = Dropout(0.2)(conv2)
-	conv2 = Conv2D(64, (3, 3), data_format=IMAGE_ORDERING, activation='relu', padding='same')(conv2)
-	pool2 = MaxPooling2D((2, 2), data_format=IMAGE_ORDERING)(conv2)
-	
-	conv3 = Conv2D(128, (3, 3), data_format=IMAGE_ORDERING, activation='relu', padding='same')(pool2)
-	conv3 = Dropout(0.2)(conv3)
-	conv3 = Conv2D(128, (3, 3), data_format=IMAGE_ORDERING, activation='relu', padding='same')(conv3)
 
-	up1 = concatenate([UpSampling2D((2, 2), data_format=IMAGE_ORDERING)(conv3), conv2], axis=MERGE_AXIS)
-	conv4 = Conv2D(64, (3, 3), data_format=IMAGE_ORDERING, activation='relu', padding='same')(up1)
-	conv4 = Dropout(0.2)(conv4)
-	conv4 = Conv2D(64, (3, 3), data_format=IMAGE_ORDERING, activation='relu', padding='same')(conv4)
-	
-	up2 = concatenate([UpSampling2D((2, 2), data_format=IMAGE_ORDERING)(conv4), conv1], axis=MERGE_AXIS)
-	conv5 = Conv2D(32, (3, 3), data_format=IMAGE_ORDERING, activation='relu', padding='same')(up2)
-	conv5 = Dropout(0.2)(conv5)
-	conv5 = Conv2D(32, (3, 3), data_format=IMAGE_ORDERING, activation='relu', padding='same')(conv5)
-	
-	o = Conv2D( n_classes, (1, 1) , data_format=IMAGE_ORDERING ,padding='same')(conv5)
-
-	model = get_segmentation_model(img_input , o )
-	model.model_name = "unet_mini"
-	return model
 
 
 def _unet( n_classes , encoder , l1_skip_conn=True,  input_height=416, input_width=608  ):
-
-	if IMAGE_ORDERING == 'channels_first':
-		MERGE_AXIS = 1
-	elif IMAGE_ORDERING == 'channels_last':
-		MERGE_AXIS = -1
 
 	img_input , levels = encoder( input_height=input_height ,  input_width=input_width )
 	[f1 , f2 , f3 , f4 , f5 ] = levels 
@@ -454,19 +392,8 @@ def _unet( n_classes , encoder , l1_skip_conn=True,  input_height=416, input_wid
 	return model
 
 
-def unet(  n_classes ,  input_height=416, input_width=608 , encoder_level=3 ) : 
-	
-	model =  _unet( n_classes , vanilla_encoder ,  input_height=input_height, input_width=input_width  )
-	model.model_name = "unet"
-	return model
-
-
 def vgg_unet( n_classes ,  input_height=416, input_width=608 , encoder_level=3):
 
 	model =  _unet( n_classes , get_vgg_encoder ,  input_height=input_height, input_width=input_width  )
 	model.model_name = "vgg_unet"
 	return model
-
-class_colors = [  ( random.randint(0,255),random.randint(0,255),random.randint(0,255)   ) for _ in range(5000)]
-
-model = vgg_unet(n_classes=14 ,  input_height=1056, input_width=1600)
