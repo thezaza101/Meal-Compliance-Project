@@ -1,3 +1,9 @@
+
+#############################################################################
+# Original code copyright 2019 Divam Gupta, modified and used with GPL 3.0  #
+# https://github.com/divamgupta/image-segmentation-keras                    #
+#############################################################################
+
 import os
 import cv2
 import six
@@ -19,7 +25,8 @@ from sklearn.metrics import jaccard_score
 from skimage.transform import resize  # Resize images
 
 IMAGE_ORDERING = 'channels_last'
-pretrained_url = "C:\\Users\\theza\\Documents\\Uni\\MIT\\2019\\TP\\Project\\Meal-Compliance-Project\\Image-segmentation\\models\\base_model.h5"
+pretrained_url = "https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5"
+# pretrained_url = "C:\\Users\\theza\\Documents\\Uni\\MIT\\2019\\TP\\Project\\Meal-Compliance-Project\\Image-segmentation\\models\\base_model.h5"
 class_colors = [(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)) for _ in range(5000)]
 MERGE_AXIS = -1
 model_from_name = {}
@@ -395,7 +402,7 @@ def res(annot, heightNew, width):
 
 def evaluate(model=None, inp_images=None, annotations=None):
 	ious = []
-	for im, an in zip(inp_images, annotations):
+	for im, an in tqdm(zip(inp_images, annotations)):
 		img_true = res(cv2.cvtColor(cv2.imread(an), cv2.COLOR_BGR2GRAY), 528, 800)
 		img_pred = predict(model, im)
 		img_true = np.array(img_true).ravel()
@@ -403,3 +410,4 @@ def evaluate(model=None, inp_images=None, annotations=None):
 		iou = jaccard_score(img_true, img_pred, average='micro')
 		ious.append(iou)
 	return np.mean(ious)
+
