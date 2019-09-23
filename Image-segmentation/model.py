@@ -411,3 +411,24 @@ def evaluate(model=None, inp_images=None, annotations=None):
 		ious.append(iou)
 	return np.mean(ious)
 
+def evaluateUnique(yTest, yPred):
+	yTestUn = pd.Series(yTest).unique()
+	yPredUn = pd.Series(yPred).unique()
+	maxLen = float(max(len(yTestUn),len(yPredUn)))
+	numEqual = float(len(set(list(yTestUn)) - (set(list(yTestUn)) - set(list(yPredUn)))))
+	return float(numEqual/maxLen)
+
+
+def evaluateOne(model=None, inp_images=None, annotations=None):
+	ious = []
+	uniqueScore = []
+	for im, an in tqdm(zip(inp_images, annotations)):
+		img_true = res(cv2.cvtColor(cv2.imread(an), cv2.COLOR_BGR2GRAY), 528, 800)
+		img_pred = predict(model, im)
+		img_true = np.array(img_true).ravel()
+		img_pred = np.array(img_pred).ravel()
+		iou = jaccard_score(img_true, img_pred, average='micro')
+		ious.append(iou)
+		us = evaluateUnique(img_true, img_pred)
+		uniqueScore.append(us)
+	return np.mean(ious), np.mean(uniqueScore)
