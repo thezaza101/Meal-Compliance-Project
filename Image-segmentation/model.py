@@ -158,7 +158,7 @@ def train(model,
 	if not validate:
 		for ep in range(epochs):
 			print("Starting Epoch ", ep)
-			model.fit_generator(train_gen, steps_per_epoch, epochs=1)
+			model.fit_generator(train_gen, steps_per_epoch, epochs=1,use_multiprocessing=False)
 			if not checkpoints_path is None:
 				model.save_weights(checkpoints_path + "." + str(ep))
 				print("saved ", checkpoints_path + ".model." + str(ep))
@@ -166,7 +166,7 @@ def train(model,
 	else:
 		for ep in range(epochs):
 			print("Starting Epoch ", ep)
-			model.fit_generator(train_gen, steps_per_epoch, validation_data=val_gen, validation_steps=200, epochs=1)
+			model.fit_generator(train_gen, steps_per_epoch, validation_data=val_gen, validation_steps=200, epochs=1,use_multiprocessing=False)
 			if not checkpoints_path is None:
 				model.save_weights(checkpoints_path + "." + str(ep))
 				print("saved ", checkpoints_path + ".model." + str(ep))
@@ -411,6 +411,14 @@ def evaluate(model=None, inp_images=None, annotations=None):
 		ious.append(iou)
 	return np.mean(ious)
 
+
+def reduceNoise(d, p=1):
+	unique, counts = np.unique(d, return_counts=True)
+	z = dict(zip(unique, counts))
+	thresh = np.percentile(list(z.values()), p)
+	dict_variable = {key: value for (key, value) in z.items() if value >= thresh}
+	return dict_variablecheckpoints_path
+
 def evaluateUnique(yTest, yPred):
 	yTestUn = pd.Series(yTest).unique()
 	yPredUn = pd.Series(yPred).unique()
@@ -419,11 +427,11 @@ def evaluateUnique(yTest, yPred):
 	return float(numEqual/maxLen)
 
 
-def evaluateOne(model=None, inp_images=None, annotations=None):
+def evaluateOne(model=None, inp_images=None, annotations=None,h=528,w=800):
 	ious = []
 	uniqueScore = []
-	for im, an in tqdm(zip(inp_images, annotations)):
-		img_true = res(cv2.cvtColor(cv2.imread(an), cv2.COLOR_BGR2GRAY), 528, 800)
+	for im, an in zip(inp_images, annotations):
+		img_true = res(cv2.cvtColor(cv2.imread(an), cv2.COLOR_BGR2GRAY), h/2, w/2)
 		img_pred = predict(model, im)
 		img_true = np.array(img_true).ravel()
 		img_pred = np.array(img_pred).ravel()
@@ -432,3 +440,40 @@ def evaluateOne(model=None, inp_images=None, annotations=None):
 		us = evaluateUnique(img_true, img_pred)
 		uniqueScore.append(us)
 	return np.mean(ious), np.mean(uniqueScore)
+
+def evaluateTwo(model=None, inp_images=None, annotations=None):
+	ious = []
+	uniqueScoreFull = []
+	uniqueScore99 = []
+	uniqueScore97 = []
+	uniqueScore95 = []
+	uniqueScore90 = []
+	for im, an in zip(inp_images, annotations):
+		img_true = res(cv2.cvtColor(cv2.imread(an), cv2.COLOR_BGR2GRAY), 528, 800)
+		img_pred = predict(model, im)
+		img_true = np.array(img_true).ravel()
+		img_pred = np.array(img_pred).ravel()
+		iou = jaccard_score(img_true, img_pred, average='micro')
+		ious.append(iou)
+
+		# Full
+		us = evaluateUnique(img_true, img_pred)
+		uniqueScoreFull.append(us)
+		# 99th percentile
+		us99 = evaluateUnique(img_true, reduceNoise(img_pred))
+		uniqueScore99.append(us99)
+
+		#97th
+		us97 = evaluateUnique(img_true, reduceNoise(img_pred,3))
+		uniqueScore97.append(us97)
+
+		#95th
+		us95 = evaluateUnique(img_true, reduceNoise(img_pred, 5))
+		uniqueScore95.append(us95)
+
+		# 90th
+		us90 = evaluateUnique(img_true, reduceNoise(img_pred, 10))
+		uniqueScore90.append(us90)
+
+
+	return np.mean(ious), np.mean(uniqueScoreFull), np.mean(uniqueScore99), np.mean(uniqueScore97), np.mean(uniqueScore95), np.mean(uniqueScore90)

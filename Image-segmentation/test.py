@@ -1,13 +1,5 @@
 from model import *
 
-model = vgg_unet(33, 1056, 1600)
-model.load_weights(
-	'C:\\Users\\theza\\Documents\\Uni\\MIT\\2019\\TP\\Project\\Meal-Compliance-Project\\Image-segmentation\\models\\model_latest.h5')
-
-out = model.predict_segmentation(
-	inp='1a.jpg',
-	out_fname="11cout.png"
-)
 
 
 def get_model_report():
@@ -20,8 +12,8 @@ def get_model_report():
 
 	trainImPath = '\\XTrain'
 	trainAnPath = '\\yTrain'
-	trainIm = glob.glob(os.path.join(basePath + trainImPath, "*"))
-	trainAn = glob.glob(os.path.join(basePath + trainAnPath, "*"))
+	trainIm = glob.glob(os.path.join(basePath+trainImPath, "*"))
+	trainAn = glob.glob(os.path.join(basePath+trainAnPath, "*"))
 	trainIm.sort()
 	trainAn.sort()
 
@@ -33,16 +25,23 @@ def get_model_report():
 	testAn.sort()
 
 	scores = []
-	for e in epochs:
-		model = vgg_unet(33, 1056, 1600)
-		model.load_weights(e)
-		trainingAc = evaluate(model, trainIm, trainAn)
-		testingAc = evaluate(model, trainIm, trainAn)
-		result = {'epoch': e.split('.')[-2],
-		          'train': trainingAc,
-		          'test': testingAc}
-		scores.append(result)
+	for e in tqdm(epochs):
+		if ('.json' not in e):
+			print(e)
+			model = vgg_unet(33, 1056, 1600)
+			model.load_weights(e)
+			trainingAc, trainSim = evaluateOne(model, trainIm, trainAn)
+			testingAc, testSim = evaluateOne(model, testIm, testAn)
+			result = {'epoch': e.split('.')[-2],
+			          'train': trainingAc,
+			          'test': testingAc,
+               'trainSim':trainSim,
+               'testSim':testSim}
+			print(result)
+			scores.append(result)
 	return scores
+
+score = get_model_report()
 
 
 def get_model_report(weights_path, basePath):
@@ -72,10 +71,10 @@ def get_model_report(weights_path, basePath):
 			print(e)
 			model = vgg_unet(33, 1056, 1600)
 			model.load_weights(e)
-			trainingAc = evaluate(model, trainIm, trainAn)
+			#trainingAc = evaluate(model, trainIm, trainAn)
 			testingAc = evaluate(model, testIm, testAn)
 			result = {'epoch': e.split('.')[-2],
-			          'train': trainingAc,
+			          #'train': trainingAc,
 			          'test': testingAc}
 			print(result)
 			scores.append(result)
