@@ -1,4 +1,3 @@
-
 #############################################################################
 # Original code copyright 2019 Divam Gupta, modified and used with GPL 3.0  #
 # https://github.com/divamgupta/image-segmentation-keras                    #
@@ -20,6 +19,8 @@ import keras
 from keras.models import *
 from keras.layers import *
 from types import MethodType
+
+import tensorflow as tf
 
 from sklearn.metrics import jaccard_score
 from skimage.transform import resize  # Resize images
@@ -102,7 +103,9 @@ def train(model,
           auto_resume_checkpoint=False,
           load_weights=None,
           steps_per_epoch=512,
-          optimizer_name='adadelta'
+          optimizer_name='adadelta',
+          m=['accuracy'],
+          l='categorical_crossentropy'
           ):
 	if isinstance(model, six.string_types):  # check if user gives model name insteead of the model object
 		# create the model from the name
@@ -123,9 +126,9 @@ def train(model,
 		assert not (val_annotations is None)
 
 	if not optimizer_name is None:
-		model.compile(loss='categorical_crossentropy',
+		model.compile(loss=l,
 		              optimizer=optimizer_name,
-		              metrics=['accuracy'])
+		              metrics=m)
 
 	if not checkpoints_path is None:
 		open(checkpoints_path + "_config.json", "w").write(json.dumps({
@@ -158,7 +161,7 @@ def train(model,
 	if not validate:
 		for ep in range(epochs):
 			print("Starting Epoch ", ep)
-			model.fit_generator(train_gen, steps_per_epoch, epochs=1,use_multiprocessing=False)
+			model.fit_generator(train_gen, steps_per_epoch, epochs=1, use_multiprocessing=False)
 			if not checkpoints_path is None:
 				model.save_weights(checkpoints_path + "." + str(ep))
 				print("saved ", checkpoints_path + ".model." + str(ep))
@@ -166,7 +169,8 @@ def train(model,
 	else:
 		for ep in range(epochs):
 			print("Starting Epoch ", ep)
-			model.fit_generator(train_gen, steps_per_epoch, validation_data=val_gen, validation_steps=200, epochs=1,use_multiprocessing=False)
+			model.fit_generator(train_gen, steps_per_epoch, validation_data=val_gen, validation_steps=200, epochs=1,
+			                    use_multiprocessing=False)
 			if not checkpoints_path is None:
 				model.save_weights(checkpoints_path + "." + str(ep))
 				print("saved ", checkpoints_path + ".model." + str(ep))
@@ -288,7 +292,7 @@ def get_pairs_from_paths(images_path, segs_path):
 		seg_bnme = os.path.basename(im).replace(".jpg", ".png").replace(".jpeg", ".png")
 		seg = os.path.join(segs_path, seg_bnme)
 		assert (seg in segmentations_d), (
-					im + " is present in " + images_path + " but " + seg_bnme + " is not found in " + segs_path + " . Make sure annotation image are in .png")
+				im + " is present in " + images_path + " but " + seg_bnme + " is not found in " + segs_path + " . Make sure annotation image are in .png")
 		ret.append((im, seg))
 
 	return ret
@@ -417,63 +421,56 @@ def reduceNoise(d, p=1):
 	z = dict(zip(unique, counts))
 	thresh = np.percentile(list(z.values()), p)
 	dict_variable = {key: value for (key, value) in z.items() if value >= thresh}
-	return dict_variablecheckpoints_path
+	return dict_variable
 
-def evaluateUnique(yTest, yPred):
-	yTestUn = pd.Series(yTest).unique()
-	yPredUn = pd.Series(yPred).unique()
-	maxLen = float(max(len(yTestUn),len(yPredUn)))
+
+def SSC(y_true, y_pred):
+	if (y_true.ndim > 1):
+		y_true = np.array(y_true).ravel()
+	if (y_pred.ndim > 1):
+		y_pred = np.array(y_pred).ravel()
+
+	yTestUn = pd.Series(y_true).unique()
+	yPredUn = pd.Series(y_pred).unique()
+	maxLen = float(max(len(yTestUn), len(yPredUn)))
 	numEqual = float(len(set(list(yTestUn)) - (set(list(yTestUn)) - set(list(yPredUn)))))
-	return float(numEqual/maxLen)
+	return float(numEqual / maxLen)
 
 
-def evaluateOne(model=None, inp_images=None, annotations=None,h=528,w=800):
+def SSCLoss(y_true, y_pred):
+	y_true = K.flatten(y_true)
+	y_pred = K.flatten(y_pred)
+	yTestUn, idx = tf.unique(y_true)
+	yPredUn, idx = tf.unique(y_pred)
+	maxLen = tf.math.maximum(tf.size(yTestUn), tf.size(yPredUn))
+	numEqual = tf.size(tf.sets.set_intersection(tf.dtypes.cast(yTestUn,tf.uint16), tf.dtypes.cast(yPredUn,tf.uint16)))
+	return tf.math.subtract(tf.constant(1), tf.math.divide(numEqual, maxLen))
+
+
+def IoU(y_true, y_pred):
+	if (y_true.ndim > 1):
+		y_true = np.array(y_true).ravel()
+	if (y_pred.ndim > 1):
+		y_pred = np.array(y_pred).ravel()
+	img_true = np.array(y_true).ravel()
+	img_pred = np.array(y_pred).ravel()
+	return jaccard_score(img_true, img_pred, average='micro')
+
+
+def IoULoss(y_true, y_pred):
+	return 1 - IoU(y_true, y_pred)
+
+
+def evaluateOne(model=None, inp_images=None, annotations=None, h=528, w=800):
 	ious = []
 	uniqueScore = []
 	for im, an in zip(inp_images, annotations):
-		img_true = res(cv2.cvtColor(cv2.imread(an), cv2.COLOR_BGR2GRAY), h/2, w/2)
+		img_true = res(cv2.cvtColor(cv2.imread(an), cv2.COLOR_BGR2GRAY), h / 2, w / 2)
 		img_pred = predict(model, im)
 		img_true = np.array(img_true).ravel()
 		img_pred = np.array(img_pred).ravel()
 		iou = jaccard_score(img_true, img_pred, average='micro')
 		ious.append(iou)
-		us = evaluateUnique(img_true, img_pred)
+		us = SSC(img_true, img_pred)
 		uniqueScore.append(us)
 	return np.mean(ious), np.mean(uniqueScore)
-
-def evaluateTwo(model=None, inp_images=None, annotations=None):
-	ious = []
-	uniqueScoreFull = []
-	uniqueScore99 = []
-	uniqueScore97 = []
-	uniqueScore95 = []
-	uniqueScore90 = []
-	for im, an in zip(inp_images, annotations):
-		img_true = res(cv2.cvtColor(cv2.imread(an), cv2.COLOR_BGR2GRAY), 528, 800)
-		img_pred = predict(model, im)
-		img_true = np.array(img_true).ravel()
-		img_pred = np.array(img_pred).ravel()
-		iou = jaccard_score(img_true, img_pred, average='micro')
-		ious.append(iou)
-
-		# Full
-		us = evaluateUnique(img_true, img_pred)
-		uniqueScoreFull.append(us)
-		# 99th percentile
-		us99 = evaluateUnique(img_true, reduceNoise(img_pred))
-		uniqueScore99.append(us99)
-
-		#97th
-		us97 = evaluateUnique(img_true, reduceNoise(img_pred,3))
-		uniqueScore97.append(us97)
-
-		#95th
-		us95 = evaluateUnique(img_true, reduceNoise(img_pred, 5))
-		uniqueScore95.append(us95)
-
-		# 90th
-		us90 = evaluateUnique(img_true, reduceNoise(img_pred, 10))
-		uniqueScore90.append(us90)
-
-
-	return np.mean(ious), np.mean(uniqueScoreFull), np.mean(uniqueScore99), np.mean(uniqueScore97), np.mean(uniqueScore95), np.mean(uniqueScore90)

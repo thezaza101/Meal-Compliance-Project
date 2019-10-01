@@ -1,4 +1,5 @@
 from model import *
+model = vgg_unet(33, 1056, 1600)
 
 
 
