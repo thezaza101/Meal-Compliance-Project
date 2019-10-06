@@ -9,6 +9,7 @@ import six
 import glob
 import json
 import random
+import operator
 import itertools
 import numpy as np
 import pandas as pd
@@ -416,12 +417,20 @@ def evaluate(model=None, inp_images=None, annotations=None):
 	return np.mean(ious)
 
 
-def reduceNoise(d, p=1):
-	unique, counts = np.unique(d, return_counts=True)
-	z = dict(zip(unique, counts))
-	thresh = np.percentile(list(z.values()), p)
-	dict_variable = {key: value for (key, value) in z.items() if value >= thresh}
-	return dict_variable
+def getUniqueCountFormImage(im):
+	img = np.array(im).flatten()
+	y = np.bincount(img)
+	ii = np.nonzero(y)[0]
+	return dict(sorted(dict(zip(ii, y[ii])).items(), key=lambda kv: kv[1]))
+
+
+def reduceSSCNoise(y_pred, thresh=0.001):
+	df = pd.DataFrame.from_dict(getUniqueCountFormImage(y_pred), orient='index').astype(float)
+	div = df.iloc[:, 0].values.sum()
+	df = df.apply(lambda r: r / div, axis=1)
+	dfout = df.to_dict()[0]
+	dfout = {k: v for k, v in dfout.items() if v > thresh}
+	return np.array(list(dfout.keys()))
 
 
 def SSC(y_true, y_pred):
@@ -443,7 +452,7 @@ def SSCLoss(y_true, y_pred):
 	yTestUn, idx = tf.unique(y_true)
 	yPredUn, idx = tf.unique(y_pred)
 	maxLen = tf.math.maximum(tf.size(yTestUn), tf.size(yPredUn))
-	numEqual = tf.size(tf.sets.set_intersection(tf.dtypes.cast(yTestUn,tf.uint16), tf.dtypes.cast(yPredUn,tf.uint16)))
+	numEqual = tf.size(tf.sets.set_intersection(tf.dtypes.cast(yTestUn, tf.uint16), tf.dtypes.cast(yPredUn, tf.uint16)))
 	return tf.math.subtract(tf.constant(1), tf.math.divide(numEqual, maxLen))
 
 
@@ -464,6 +473,7 @@ def IoULoss(y_true, y_pred):
 def evaluateOne(model=None, inp_images=None, annotations=None, h=528, w=800):
 	ious = []
 	uniqueScore = []
+	uniqueScoreRN = []
 	for im, an in zip(inp_images, annotations):
 		img_true = res(cv2.cvtColor(cv2.imread(an), cv2.COLOR_BGR2GRAY), h / 2, w / 2)
 		img_pred = predict(model, im)
@@ -472,5 +482,7 @@ def evaluateOne(model=None, inp_images=None, annotations=None, h=528, w=800):
 		iou = jaccard_score(img_true, img_pred, average='micro')
 		ious.append(iou)
 		us = SSC(img_true, img_pred)
+		usRN = SSC(img_true, reduceSSCNoise(img_pred))
 		uniqueScore.append(us)
-	return np.mean(ious), np.mean(uniqueScore)
+		uniqueScoreRN.append(usRN)
+	return np.mean(ious), np.mean(uniqueScore), np.mean(uniqueScoreRN)
