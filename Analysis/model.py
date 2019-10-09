@@ -13,7 +13,6 @@ import operator
 import itertools
 import numpy as np
 import pandas as pd
-import imageio as imio  # Reading images
 
 from tqdm import tqdm
 
@@ -447,6 +446,16 @@ def SSC(y_true, y_pred):
 	return float(numEqual / maxLen)
 
 
+def SSCLoss(y_true, y_pred):
+	y_true = K.flatten(y_true)
+	y_pred = K.flatten(y_pred)
+	yTestUn, idx = tf.unique(y_true)
+	yPredUn, idx = tf.unique(y_pred)
+	maxLen = tf.math.maximum(tf.size(yTestUn), tf.size(yPredUn))
+	numEqual = tf.size(tf.sets.set_intersection(tf.dtypes.cast(yTestUn, tf.uint16), tf.dtypes.cast(yPredUn, tf.uint16)))
+	return tf.math.subtract(tf.constant(1), tf.math.divide(numEqual, maxLen))
+
+
 def IoU(y_true, y_pred):
 	if (y_true.ndim > 1):
 		y_true = np.array(y_true).ravel()
@@ -457,14 +466,16 @@ def IoU(y_true, y_pred):
 	return jaccard_score(img_true, img_pred, average='micro')
 
 
+def IoULoss(y_true, y_pred):
+	return 1 - IoU(y_true, y_pred)
+
+
 def evaluateOne(model=None, inp_images=None, annotations=None, h=528, w=800):
 	ious = []
 	uniqueScore = []
 	uniqueScoreRN = []
 	for im, an in zip(inp_images, annotations):
-		img_true = resize(imio.imread(an), (h / 2, w / 2), mode='edge', anti_aliasing=False,
-		                  anti_aliasing_sigma=None, preserve_range=True,
-		                  order=0).astype(int)
+		img_true = res(cv2.cvtColor(cv2.imread(an), cv2.COLOR_BGR2GRAY), h / 2, w / 2)
 		img_pred = predict(model, im)
 		img_true = np.array(img_true).ravel()
 		img_pred = np.array(img_pred).ravel()
