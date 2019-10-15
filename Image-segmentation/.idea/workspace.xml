@@ -2,12 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3cc2d09d-b197-4e4d-a9a9-aa2101a5ac48" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../Additional-Data-Creator/Additional-Data-Creator-Workbook.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/../Additional-Data-Creator/Additional-Data-Creator-Workbook.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/model.py" beforeDir="false" afterPath="$PROJECT_DIR$/model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../SegmentMapMerger/SegmentMapMerger.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/../SegmentMapMerger/SegmentMapMerger.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Analysis/ExprimentAnalysis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/../Analysis/ExprimentAnalysis.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Analysis/Untitled.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/../Analysis/Untitled.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -17,28 +15,47 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="591">
-              <caret line="398" column="16" selection-start-line="398" selection-start-column="16" selection-end-line="398" selection-end-column="16" />
+            <state relative-caret-position="3838">
+              <caret line="449" selection-start-line="449" selection-end-line="449" />
               <folding>
-                <element signature="e#0#9#0" expanded="true" />
+                <element signature="e#313#322#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/test.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="119">
-              <caret line="7" column="1" selection-start-line="7" selection-start-column="1" selection-end-line="7" selection-end-column="1" />
-            </state>
-          </provider>
-        </entry>
-      </file>
     </leaf>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>augment_seg</find>
+      <find>IMAGE_ORDERING</find>
+      <find>tqdm</find>
+      <find>:\\Users\\theza\\Documents</find>
+      <find>base_model.h5</find>
+      <find>loss</find>
+      <find>evaluate</find>
+      <find>predict_segmentation</find>
+      <find>predict</find>
+      <find>out_fname</find>
+      <find>train</find>
+      <find>batch</find>
+      <find>checkpoints_path</find>
+      <find>512</find>
+      <find>steps_per_epoch</find>
+      <find>generat</find>
+      <find>image_segmentation_generator</find>
+      <find>fit</find>
+      <find>fit_generator</find>
+      <find>compile</find>
+      <find>categorical_crossentropy</find>
+      <find>evaluateUnique</find>
+      <find>reduceNoise</find>
+      <find>pretrained_url</find>
+    </findStrings>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
@@ -46,14 +63,14 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/model.py" />
         <option value="$PROJECT_DIR$/test.py" />
+        <option value="$PROJECT_DIR$/model.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="7">
-    <option name="x" value="112" />
-    <option name="y" value="-12" />
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="54" />
+    <option name="y" value="108" />
     <option name="width" value="2696" />
     <option name="height" value="1664" />
   </component>
@@ -63,6 +80,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -74,7 +92,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -135,42 +152,141 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-6" y="-6" width="1381" height="885" extended-state="6" />
-    <editor active="true" />
     <layout>
-      <window_info id="Favorites" side_tool="true" />
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.24386618" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info anchor="bottom" id="Version Control" />
-      <window_info anchor="bottom" id="Python Console" />
-      <window_info anchor="bottom" id="Terminal" />
-      <window_info anchor="bottom" id="Event Log" side_tool="true" />
+      <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Run" order="2" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.19072847" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.28609273" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Version Control" order="7" />
+      <window_info anchor="bottom" id="Terminal" order="8" weight="0.32980132" />
+      <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
+      <window_info anchor="bottom" id="Python Console" order="10" weight="0.32980132" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
     </layout>
   </component>
+  <component name="debuggerHistoryManager">
+    <expressions id="evaluateCodeFragment">
+      <expression>
+        <expression-string>d = yPred
+p = 1
+unique, counts = np.unique(d, return_counts=True)
+z = dict(zip(unique, counts))
+thresh = np.percentile(list(z.values()), p)
+dict_variable = {key:value for (key,value) in z.items() if value &gt;= thresh}
+print(dict_variable)</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>d = yPred
+p = 1
+unique, counts = np.unique(d, return_counts=True)
+z = dict(zip(unique, counts))
+thresh = np.percentile(list(z.values()), p)
+dict_variable = {key:value for (key,value) in z.items()}
+print(dict_variable)</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>d = yPred
+p = 1
+unique, counts = np.unique(d, return_counts=True)
+z = dict(zip(unique, counts))
+thresh = np.percentile(list(z.values()), p)
+print(dict(filter(lambda elem: elem[0] &gt;= thresh, z.items())))</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>d = yPred
+p = 1
+unique, counts = np.unique(d, return_counts=True)
+z = dict(zip(unique, counts))
+thresh = np.percentile(list(z.values()), p)
+print(dict(filter(lambda elem: elem[0] &gt;= thresh, d.items())))</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>def reduceNoise(d, p=1):
+	unique, counts = np.unique(d, return_counts=True)
+	z = dict(zip(unique, counts))
+	thresh = np.percentile(list(z.values()), p)
+	print(thresh)
+	
+reduceNoise(yTest)</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>def reduceNoise(d, p=1):
+	unique, counts = np.unique(d, return_counts=True)
+	z = dict(zip(unique, counts))
+	thresh = np.percentile(list(z.values()), p)
+	print(dict(filter(lambda elem: elem[0] &gt;= thresh, d.items())))
+	
+reduceNoise(yTest)</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>d = yTest
+p = 1
+unique, counts = np.unique(d, return_counts=True)
+z = dict(zip(unique, counts))
+thresh = np.percentile(list(z.values()), p)
+print(dict(filter(lambda elem: elem[0] &gt;= thresh, dictOfNames.items())))</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>def reduceNoise(d, p=1):
+	unique, counts = np.unique(d, return_counts=True)
+	z = dict(zip(unique, counts))
+	thresh = np.percentile(list(z.values()), p)
+	print(dict(filter(lambda elem: elem[0] &gt;= thresh, dictOfNames.items())))
+	
+reduceNoise(yTest)</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>unique, counts = np.unique(yTest, return_counts=True)
+z = dict(zip(unique, counts))
+print(np.percentile(list(z.values()), 1))
+print(z)</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
+      </expression>
+    </expressions>
+  </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/model.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="591">
-          <caret line="398" column="16" selection-start-line="398" selection-start-column="16" selection-end-line="398" selection-end-column="16" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
+    <entry file="file://$PROJECT_DIR$/11cout.png">
+      <provider selected="true" editor-type-id="images" />
     </entry>
     <entry file="file://$PROJECT_DIR$/test.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="119">
-          <caret line="7" column="1" selection-start-line="7" selection-start-column="1" selection-end-line="7" selection-end-column="1" />
+        <state relative-caret-position="-363">
+          <caret line="2" selection-start-line="2" selection-end-line="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/model.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3838">
+          <caret line="449" selection-start-line="449" selection-end-line="449" />
+          <folding>
+            <element signature="e#313#322#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
