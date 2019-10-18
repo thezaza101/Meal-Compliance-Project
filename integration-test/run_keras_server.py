@@ -9,6 +9,7 @@
 # import the necessary packages
 from keras.preprocessing.image import img_to_array
 from keras.applications import imagenet_utils
+from tray_analyser import *
 from model import *
 from PIL import Image
 import numpy as np
@@ -20,15 +21,18 @@ app = flask.Flask(__name__)
 model = None
 
 graph = None
+
+
 def load_model():
 	# load the pre-trained Keras model (here we are using a model
 	# pre-trained on ImageNet and provided by Keras, but you can
 	# substitute in your own networks just as easily)
 	global model
 	model = vgg_unet(43, 256, 416)
-	model.load_weights(os.path.abspath(os.path.join('weights.h5')))
+	model.load_weights(os.path.abspath(os.path.join('Data', 'weights.h5')))
 	global graph
 	graph = tf.get_default_graph()
+
 
 def prepare_image(image, target):
 	# if the image mode is not RGB, convert it
@@ -43,6 +47,7 @@ def prepare_image(image, target):
 
 	# return the processed image
 	return image
+
 
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -67,15 +72,37 @@ def predict():
 
 				preds = model.predict_segmentation(inp=image)
 				output = {}
-				output['pred'] = preds.tolist()
+				output['map'] = preds.tolist()
 
 	# return the data dictionary as a JSON response
 	return output
+
+
+@app.route("/analyse", methods=["POST"])
+def analyse():
+	# initialize the data dictionary that will be returned from the
+	# view
+	data = {"success": False}
+
+	# ensure an segmentation map was properly uploaded to our endpoint
+	if flask.request.method == "POST":
+		# read the segmentation map
+		segMap = flask.request.get_json(force=True)
+		segMap = np.asarray(segMap["map"])
+		uniq = reduceSSCNoise(segMap)
+
+		preds = analyseAndGetOutput(segMap, uniq)
+		output = {}
+		output['pred'] = preds.tolist()
+
+	# return the data dictionary as a JSON response
+	return output
+
 
 # if this is the main thread of execution first load the model and
 # then start the server
 if __name__ == "__main__":
 	print(("* Loading Keras model and Flask starting server..."
-		"please wait until server has fully started"))
+	       "please wait until server has fully started"))
 	load_model()
 	app.run()

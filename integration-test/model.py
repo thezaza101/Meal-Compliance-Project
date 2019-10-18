@@ -1,5 +1,6 @@
 #############################################################################
 # Original code copyright 2019 Divam Gupta, modified and used with GPL 3.0  #
+# Modifications made by Zahid Parvez for the Meal Compliance Project S22019 #
 # https://github.com/divamgupta/image-segmentation-keras                    #
 #############################################################################
 
@@ -15,6 +16,7 @@ import numpy as np
 import pandas as pd
 
 from tqdm import tqdm
+import imageio as imio  # Reading images
 
 import keras
 from keras.models import *
@@ -27,8 +29,7 @@ from sklearn.metrics import jaccard_score
 from skimage.transform import resize  # Resize images
 
 IMAGE_ORDERING = 'channels_last'
-pretrained_url = os.path.abspath(os.path.join('base_model.h5'))
-# pretrained_url = "C:\\Users\\theza\\Documents\\Uni\\MIT\\2019\\TP\\Project\\Meal-Compliance-Project\\Image-segmentation\\models\\base_model.h5"
+pretrained_url = os.path.abspath(os.path.join('Data', 'base_model.h5'))
 class_colors = [(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)) for _ in range(5000)]
 MERGE_AXIS = -1
 model_from_name = {}
@@ -417,7 +418,30 @@ def evaluate(model=None, inp_images=None, annotations=None):
 	return np.mean(ious)
 
 
+def tversky_loss(y_true, y_pred, beta=0.5):
+	# https://lars76.github.io/neural-networks/object-detection/losses-for-segmentation/
+	numerator = tf.reduce_sum(y_true * y_pred, axis=-1)
+	denominator = y_true * y_pred + beta * (1 - y_true) * y_pred + (1 - beta) * y_true * (1 - y_pred)
+
+	return 1 - (numerator + 1) / (tf.reduce_sum(denominator, axis=-1) + 1)
+
+
+def convert_to_logits(y_pred):
+	# see https://github.com/tensorflow/tensorflow/blob/r1.10/tensorflow/python/keras/backend.py#L3525
+	y_pred = tf.clip_by_value(y_pred, tf.keras.backend.epsilon(), 1 - tf.keras.backend.epsilon())
+
+	return tf.log(y_pred / (1 - y_pred))
+
+
+def weighted_cross_entropy(y_true, y_pred, beta=0.5):
+	# https://lars76.github.io/neural-networks/object-detection/losses-for-segmentation/
+	y_pred = convert_to_logits(y_pred)
+	loss = tf.nn.weighted_cross_entropy_with_logits(logits=y_pred, targets=y_true, pos_weight=beta)
+	return tf.reduce_mean(loss)
+
+
 def getUniqueCountFormImage(im):
+	"""This function returns a dictionary of each unique value in the input image and their counts"""
 	img = np.array(im).flatten()
 	y = np.bincount(img)
 	ii = np.nonzero(y)[0]
@@ -425,6 +449,7 @@ def getUniqueCountFormImage(im):
 
 
 def reduceSSCNoise(y_pred, thresh=0.001):
+	"""This function reduce the 'noise ' from segmentation maps based on the threshold specified"""
 	df = pd.DataFrame.from_dict(getUniqueCountFormImage(y_pred), orient='index').astype(float)
 	div = df.iloc[:, 0].values.sum()
 	df = df.apply(lambda r: r / div, axis=1)
@@ -446,17 +471,8 @@ def SSC(y_true, y_pred):
 	return float(numEqual / maxLen)
 
 
-def SSCLoss(y_true, y_pred):
-	y_true = K.flatten(y_true)
-	y_pred = K.flatten(y_pred)
-	yTestUn, idx = tf.unique(y_true)
-	yPredUn, idx = tf.unique(y_pred)
-	maxLen = tf.math.maximum(tf.size(yTestUn), tf.size(yPredUn))
-	numEqual = tf.size(tf.sets.set_intersection(tf.dtypes.cast(yTestUn, tf.uint16), tf.dtypes.cast(yPredUn, tf.uint16)))
-	return tf.math.subtract(tf.constant(1), tf.math.divide(numEqual, maxLen))
-
-
 def IoU(y_true, y_pred):
+	"""This function calculates the IoU score for a segmentation map"""
 	if (y_true.ndim > 1):
 		y_true = np.array(y_true).ravel()
 	if (y_pred.ndim > 1):
@@ -466,16 +482,17 @@ def IoU(y_true, y_pred):
 	return jaccard_score(img_true, img_pred, average='micro')
 
 
-def IoULoss(y_true, y_pred):
-	return 1 - IoU(y_true, y_pred)
-
-
 def evaluateOne(model=None, inp_images=None, annotations=None, h=528, w=800):
+	"""This is the evaluation function used for most of the expriments"""
 	ious = []
 	uniqueScore = []
 	uniqueScoreRN = []
 	for im, an in zip(inp_images, annotations):
-		img_true = res(cv2.cvtColor(cv2.imread(an), cv2.COLOR_BGR2GRAY), h / 2, w / 2)
+		img_true = resize(imio.imread(an), (h / 2, w / 2), mode='edge', anti_aliasing=False,
+		                  anti_aliasing_sigma=None, preserve_range=True,
+		                  order=0).astype(int)
+		if (img_true.ndim > 1):
+			img_true = img_true[:, :, 0]
 		img_pred = predict(model, im)
 		img_true = np.array(img_true).ravel()
 		img_pred = np.array(img_pred).ravel()
@@ -486,3 +503,43 @@ def evaluateOne(model=None, inp_images=None, annotations=None, h=528, w=800):
 		uniqueScore.append(us)
 		uniqueScoreRN.append(usRN)
 	return np.mean(ious), np.mean(uniqueScore), np.mean(uniqueScoreRN)
+
+
+def get_model_report(number, weights_path, basePath, classes, h, w, evalNum=None):
+	"""This function creates the 'report' for each expriment.. note this was designed to work with floydhub"""
+	if (evalNum is None):
+		evalNum = number
+	epochs = glob.glob(os.path.join(weights_path + '/' + str(number), "vgg_unet_1.*"))
+	epochs.sort()
+	trainImPath = '/XTrain'
+	trainAnPath = '/yTrain'
+	trainIm = glob.glob(os.path.join(basePath + '/' + str(evalNum) + trainImPath, "*"))
+	trainAn = glob.glob(os.path.join(basePath + '/' + str(evalNum) + trainAnPath, "*"))
+	trainIm.sort()
+	trainAn.sort()
+
+	testImPath = '/XTest'
+	testAnPath = '/yTest'
+	testIm = glob.glob(os.path.join(basePath + '/' + str(evalNum) + testImPath, "*"))
+	testAn = glob.glob(os.path.join(basePath + '/' + str(evalNum) + testAnPath, "*"))
+	testIm.sort()
+	testAn.sort()
+
+	scores = []
+	for e in tqdm(epochs):
+		if ('.json' not in e):
+			print(e)
+			model = vgg_unet(classes, input_height=h, input_width=w)
+			model.load_weights(e)
+			trainingAc, trainSim, trainSimRN = evaluateOne(model, trainIm, trainAn, h, w)
+			testingAc, testSim, testSimRN = evaluateOne(model, testIm, testAn, h, w)
+			result = {'epoch': e.split('.')[-1],
+			          'train': trainingAc,
+			          'test': testingAc,
+			          'trainSim': trainSim,
+			          'testSim': testSim,
+			          'trainSimRN': trainSimRN,
+			          'testSimRN': testSimRN}
+			print(result)
+			scores.append(result)
+	return scores
