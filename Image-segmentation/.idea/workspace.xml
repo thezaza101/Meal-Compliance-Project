@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="3cc2d09d-b197-4e4d-a9a9-aa2101a5ac48" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../Additional-Data-Creator/Additional-Data-Creator-Workbook.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/../Additional-Data-Creator/Additional-Data-Creator-Workbook.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Analysis/ExprimentAnalysis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/../Analysis/ExprimentAnalysis.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Analysis/Untitled.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/../Analysis/Untitled.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="3cc2d09d-b197-4e4d-a9a9-aa2101a5ac48" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -14,11 +9,11 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="3838">
+            <state relative-caret-position="673">
               <caret line="449" selection-start-line="449" selection-end-line="449" />
               <folding>
                 <element signature="e#313#322#0" expanded="true" />
@@ -80,7 +75,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -92,6 +86,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -152,6 +147,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-6" y="-6" width="1381" height="885" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.24386618" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -282,7 +278,7 @@ print(z)</expression-string>
     </entry>
     <entry file="file://$PROJECT_DIR$/model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3838">
+        <state relative-caret-position="673">
           <caret line="449" selection-start-line="449" selection-end-line="449" />
           <folding>
             <element signature="e#313#322#0" expanded="true" />

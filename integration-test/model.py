@@ -30,6 +30,8 @@ from skimage.transform import resize  # Resize images
 
 IMAGE_ORDERING = 'channels_last'
 pretrained_url = os.path.abspath(os.path.join('Data', 'base_model.h5'))
+# Online link, useful for training on the cloud
+#pretrained_url = "https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5"
 class_colors = [(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)) for _ in range(5000)]
 MERGE_AXIS = -1
 model_from_name = {}
