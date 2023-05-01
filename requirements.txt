@@ -1,4 +1,4 @@
-Flask==1.1.1
+Flask==2.3.2
 h5py==2.9.0
 imageio==2.5.0
 imagesize==1.1.0
